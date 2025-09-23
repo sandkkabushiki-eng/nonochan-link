@@ -153,30 +153,13 @@ export default function HomePage() {
 
           {/* リンク一覧 */}
           <div className="space-y-3">
-            {profile.links.map((link, index) => (
-              <div key={link.id}>
-                {/* リンクの間にインライン広告を挿入 */}
-                {index === Math.floor(profile.links.length / 2) && (
-                  <div className="my-4">
-                    <AdSense 
-                      adSlot={AdUnits.INLINE_RECTANGLE}
-                      adFormat="rectangle"
-                      className="w-full"
-                      adStyle={{ 
-                        display: 'block',
-                        width: '100%',
-                        height: '250px',
-                        maxWidth: '300px',
-                        margin: '0 auto'
-                      }}
-                    />
-                  </div>
-                )}
-                <div
-                  className="relative group"
-                  onMouseEnter={() => setHoveredLink(link.id)}
-                  onMouseLeave={() => setHoveredLink(null)}
-                >
+            {profile.links.map((link) => (
+              <div
+                key={link.id}
+                className="relative group"
+                onMouseEnter={() => setHoveredLink(link.id)}
+                onMouseLeave={() => setHoveredLink(null)}
+              >
                 <button
                   onClick={() => handleLinkClick(link)}
                   className={`w-full transition-all duration-300 rounded-2xl p-4 text-left shadow-lg hover:shadow-xl transform hover:scale-105 ${
@@ -239,13 +222,28 @@ export default function HomePage() {
                   </div>
                 </button>
 
-                  {/* ホバーエフェクト */}
-                  {hoveredLink === link.id && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl pointer-events-none"></div>
-                  )}
-                </div>
+                {/* ホバーエフェクト */}
+                {hoveredLink === link.id && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl pointer-events-none"></div>
+                )}
               </div>
             ))}
+          </div>
+
+          {/* インライン広告（リンクの下に配置） */}
+          <div className="my-6">
+            <AdSense 
+              adSlot={AdUnits.INLINE_RECTANGLE}
+              adFormat="rectangle"
+              className="w-full"
+              adStyle={{ 
+                display: 'block',
+                width: '100%',
+                height: '250px',
+                maxWidth: '300px',
+                margin: '0 auto'
+              }}
+            />
           </div>
 
           {/* QRコード表示 */}
