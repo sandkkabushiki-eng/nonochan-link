@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://your-domain.com/sitemap.xml
+
+# AdSense用のクローラー許可
+User-agent: Mediapartners-Google
+Allow: /
+
+# 検索エンジン最適化
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /

@@ -1,103 +1,322 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import { ExternalLink, Moon, Sun, Share2, QrCode } from 'lucide-react';
+import { profile } from '@/data/profile';
+import { LinkItem } from '@/types/profile';
+import AdSense, { AdUnits } from '@/components/AdSense';
+
+export default function HomePage() {
+  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showQR, setShowQR] = useState(false);
+
+  // ダークモード設定のみ読み込み（軽量化）
+  useEffect(() => {
+    try {
+      const savedDarkMode = localStorage.getItem('dark');
+      if (savedDarkMode) {
+        setIsDarkMode(savedDarkMode === '1');
+      }
+    } catch {
+      console.log('ローカルストレージの読み込みに失敗しました');
+    }
+  }, []);
+
+  // ダークモードの切り替え（最適化版）
+  const toggleDarkMode = () => {
+    const newDarkMode = !isDarkMode;
+    setIsDarkMode(newDarkMode);
+    localStorage.setItem('dark', newDarkMode ? '1' : '0');
+  };
+
+  const handleLinkClick = (link: LinkItem) => {
+    // 外部リンクを開く（統計なし）
+    window.open(link.url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${profile.displayName}のリンク集`,
+          text: `${profile.displayName}のSNSリンク集です`,
+          url: window.location.href,
+        });
+      } catch {
+        console.log('共有がキャンセルされました');
+      }
+    } else {
+      // フォールバック: URLをクリップボードにコピー
+      navigator.clipboard.writeText(window.location.href);
+      alert('URLをクリップボードにコピーしました！');
+    }
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    <div 
+      className={`min-h-screen bg-cover bg-center bg-no-repeat transition-all duration-500 ${
+        isDarkMode ? 'dark' : ''
+      }`}
+      style={{ 
+        backgroundImage: profile.backgroundUrl ? `url(${profile.backgroundUrl})` : 
+          isDarkMode ? 'linear-gradient(135deg, #1e1b4b 0%, #581c87 100%)' : 
+          'linear-gradient(135deg, #a8b5ff 0%, #c084fc 100%)',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      {/* オーバーレイ */}
+      <div className={`min-h-screen backdrop-blur-sm transition-all duration-500 ${
+        isDarkMode ? 'bg-black/40' : 'bg-white/5'
+      }`}>
+        <div className="container mx-auto px-4 py-8 max-w-md">
+          
+          {/* ヘッダー広告 */}
+          <div className="mb-4">
+            <AdSense 
+              adSlot={AdUnits.HEADER_BANNER}
+              adFormat="horizontal"
+              className="w-full"
+              adStyle={{ 
+                display: 'block',
+                width: '100%',
+                height: '90px',
+                maxWidth: '728px',
+                margin: '0 auto'
+              }}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          </div>
+          
+          {/* コントロールボタン */}
+          <div className="flex justify-end items-center mb-6">
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleShare}
+                className="p-2 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-sm text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-black/30 transition-all duration-200"
+                title="共有"
+              >
+                <Share2 className="h-4 w-4" />
+              </button>
+              
+              <button
+                onClick={() => setShowQR(!showQR)}
+                className="p-2 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-sm text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-black/30 transition-all duration-200"
+                title="QRコード"
+              >
+                <QrCode className="h-4 w-4" />
+              </button>
+              
+              <button
+                onClick={toggleDarkMode}
+                className="p-2 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-sm text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-black/30 transition-all duration-200"
+                title={isDarkMode ? "ライトモード" : "ダークモード"}
+              >
+                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+          {/* プロフィールセクション */}
+          <div className="text-center mb-8">
+            {/* アバター */}
+            <div className="relative mb-4">
+              <div className="w-24 h-24 mx-auto rounded-full overflow-hidden border-4 border-white/30 shadow-lg">
+                <img 
+                  src={profile.avatarUrl} 
+                  alt={profile.displayName}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {/* オンラインインジケーター */}
+              <div className="absolute bottom-1 right-1/2 transform translate-x-1/2 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+            </div>
+
+            {/* 名前とハンドル */}
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 drop-shadow-lg">
+              {profile.displayName}
+            </h1>
+            <p className="text-gray-800 dark:text-gray-200 text-sm mb-4 drop-shadow-lg">
+              @{profile.handle}
+            </p>
+
+            {/* 自己紹介 */}
+            {profile.bio && (
+              <div className="text-gray-900 dark:text-white text-sm leading-relaxed mb-6 drop-shadow-lg font-sans">
+                {profile.bio.split('\n').map((line, index) => (
+                  <p key={index} className="mb-1">
+                    {line}
+                  </p>
+                ))}
+              </div>
+            )}
+
+          </div>
+
+          {/* リンク一覧 */}
+          <div className="space-y-3">
+            {profile.links.map((link, index) => (
+              <div key={link.id}>
+                {/* リンクの間にインライン広告を挿入 */}
+                {index === Math.floor(profile.links.length / 2) && (
+                  <div className="my-4">
+                    <AdSense 
+                      adSlot={AdUnits.INLINE_RECTANGLE}
+                      adFormat="rectangle"
+                      className="w-full"
+                      adStyle={{ 
+                        display: 'block',
+                        width: '100%',
+                        height: '250px',
+                        maxWidth: '300px',
+                        margin: '0 auto'
+                      }}
+                    />
+                  </div>
+                )}
+                <div
+                  className="relative group"
+                  onMouseEnter={() => setHoveredLink(link.id)}
+                  onMouseLeave={() => setHoveredLink(null)}
+                >
+                <button
+                  onClick={() => handleLinkClick(link)}
+                  className={`w-full transition-all duration-300 rounded-2xl p-4 text-left shadow-lg hover:shadow-xl transform hover:scale-105 ${
+                    isDarkMode 
+                      ? 'bg-gray-800 hover:bg-gray-700' 
+                      : 'bg-white hover:bg-gray-50'
+                  }`}
+                  style={{
+                    backgroundColor: link.style?.backgroundHex ? 
+                      (isDarkMode ? `${link.style.backgroundHex}20` : link.style.backgroundHex) : 
+                      undefined
+                  }}
+                >
+                  <div className="flex items-center space-x-3">
+                    {/* アイコン */}
+                    <div className="flex-shrink-0">
+                      {link.style?.iconImageUrl ? (
+                        <div className="w-10 h-10 rounded-full overflow-hidden">
+                          <img 
+                            src={link.style.iconImageUrl} 
+                            alt={link.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : link.style?.iconEmoji ? (
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${
+                          isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
+                        }`}>
+                          {link.style.iconEmoji}
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                          <ExternalLink className="h-5 w-5 text-white" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* コンテンツ */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`font-semibold text-sm truncate ${
+                        isDarkMode ? 'text-white' : 'text-gray-900'
+                      }`}>
+                        {link.title}
+                      </h3>
+                      {link.description && (
+                        <p className={`text-xs mt-1 line-clamp-2 ${
+                          isDarkMode ? 'text-gray-400' : 'text-gray-600'
+                        }`}>
+                          {link.description}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* 外部リンクアイコン */}
+                    <div className="flex-shrink-0">
+                      <ExternalLink className={`h-4 w-4 ${
+                        isDarkMode ? 'text-gray-400' : 'text-gray-400'
+                      }`} />
+                    </div>
+                  </div>
+                </button>
+
+                  {/* ホバーエフェクト */}
+                  {hoveredLink === link.id && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl pointer-events-none"></div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* QRコード表示 */}
+          {showQR && (
+            <div className="mt-6 p-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl text-center">
+              <h3 className={`text-sm font-semibold mb-2 ${
+                isDarkMode ? 'text-white' : 'text-gray-900'
+              }`}>
+                QRコード
+              </h3>
+              <div className="w-32 h-32 mx-auto bg-white p-2 rounded-lg">
+                {/* 簡易的なQRコード風の表示 */}
+                <div className="w-full h-full bg-black grid grid-cols-8 gap-0.5">
+                  {Array.from({ length: 64 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={`w-full h-full ${
+                        Math.random() > 0.5 ? 'bg-white' : 'bg-black'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+              <p className={`text-xs mt-2 ${
+                isDarkMode ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                このQRコードをスキャンしてアクセス
+              </p>
+            </div>
+          )}
+
+          {/* お知らせ欄 */}
+          <div className="mt-6 p-4 bg-gradient-to-r from-pink-500/20 to-purple-500/20 dark:from-pink-500/10 dark:to-purple-500/10 backdrop-blur-sm rounded-2xl border border-pink-200/30 dark:border-pink-500/20">
+            <h3 className={`text-sm font-semibold mb-2 ${
+              isDarkMode ? 'text-white' : 'text-gray-900'
+            }`}>
+              📢 お知らせ
+            </h3>
+            <p className={`text-xs leading-relaxed ${
+              isDarkMode ? 'text-gray-300' : 'text-gray-700'
+            }`}>
+              いつもありがとうございます！新しいコンテンツを随時更新中です✨
+            </p>
+          </div>
+
+          {/* フッター広告 */}
+          <div className="mt-6 mb-4">
+            <AdSense 
+              adSlot={AdUnits.FOOTER_HORIZONTAL}
+              adFormat="horizontal"
+              className="w-full"
+              adStyle={{ 
+                display: 'block',
+                width: '100%',
+                height: '90px',
+                maxWidth: '728px',
+                margin: '0 auto'
+              }}
+            />
+          </div>
+
+          {/* フッター */}
+          <div className="text-center mt-4">
+            <p className={`text-xs drop-shadow ${
+              isDarkMode ? 'text-gray-400' : 'text-gray-700'
+            }`}>
+              ののちゃんリンク
+            </p>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }
