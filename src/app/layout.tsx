@@ -33,11 +33,11 @@ export default function RootLayout({
     <html lang="ja">
       <head>
         {/* Google AdSense - ののちゃんリンク用 */}
-        <Script
-          async
+        <script 
+          async 
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9157219543395530"
           crossOrigin="anonymous"
-        />
+        ></script>
         
         {/* Google Analytics - 本格設定 */}
         <Script
@@ -68,6 +68,9 @@ export default function RootLayout({
         <meta name="robots" content="index, follow" />
         <meta name="googlebot" content="index, follow" />
         <link rel="canonical" href="https://your-domain.com" />
+        
+        {/* AdSense所有権確認用メタタグ */}
+        <meta name="google-adsense-account" content="ca-pub-9157219543395530" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
