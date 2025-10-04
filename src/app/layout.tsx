@@ -17,6 +17,16 @@ export const metadata: Metadata = {
   title: "ののちゃんリンク",
   description: "ののちゃんのSNSリンク集",
   keywords: "ののちゃん, SNS, リンク集, Instagram, X, TikTok",
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
   openGraph: {
     title: "ののちゃんリンク",
     description: "ののちゃんのSNSリンク集",
@@ -64,13 +74,18 @@ export default function RootLayout({
         </Script>
         
         {/* メタタグ最適化 */}
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="robots" content="index, follow" />
         <meta name="googlebot" content="index, follow" />
         <link rel="canonical" href="https://your-domain.com" />
         
         {/* AdSense所有権確認用メタタグ */}
         <meta name="google-adsense-account" content="ca-pub-9157219543395530" />
+        
+        {/* ファビコン */}
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

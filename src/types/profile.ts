@@ -20,7 +20,16 @@ export type SocialHandles = Partial<{
   tiktok: string;
   github: string;
   website: string;
+  facebook: string;
+  snapchat: string;
+  telegram: string;
+  onlyfans: string;
 }>;
+
+export type ProfileStats = {
+  totalFollowers: string;
+  posts: string;
+};
 
 export type Profile = {
   displayName: string;
@@ -31,6 +40,7 @@ export type Profile = {
   backgroundUrl?: string; // 背景全面画像
   links: LinkItem[];
   socials?: SocialHandles;
+  stats?: ProfileStats;
   theme?: {
     name: 'light' | 'dark' | 'pastel';
     accentHex?: string;

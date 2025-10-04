@@ -1,320 +1,348 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ExternalLink, Moon, Sun, Share2, QrCode } from 'lucide-react';
-import { profile } from '@/data/profile';
-import { LinkItem } from '@/types/profile';
-import AdSense, { AdUnits } from '@/components/AdSense';
+import { ExternalLink, ChevronDown, Star, Wifi, Battery, Signal } from 'lucide-react';
+
+interface LinkItem {
+  id: string;
+  title: string;
+  description?: string;
+  url: string;
+  style?: {
+    iconImageUrl?: string;
+  };
+}
+
+interface Profile {
+  displayName: string;
+  handle: string;
+  avatarUrl: string;
+  bio: string;
+  links: LinkItem[];
+  socials?: Record<string, string>;
+  stats?: {
+    totalFollowers: string;
+    posts: string;
+  };
+}
+
+const profile: Profile = {
+  displayName: 'のの',
+  handle: 'nonochan',
+  avatarUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
+  bio: 'Creator',
+  links: [
+    {
+      id: '1',
+      title: 'OnlyFans',
+      description: 'Exclusive content and behind-the-scenes',
+      url: '#',
+      style: {
+        iconImageUrl: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=48&h=48&fit=crop'
+      }
+    },
+    {
+      id: '2',
+      title: 'Instagram',
+      description: 'Daily updates and photos',
+      url: '#',
+      style: {
+        iconImageUrl: 'https://images.unsplash.com/photo-1611605698335-8b1569810432?w=48&h=48&fit=crop'
+      }
+    },
+    {
+      id: '3',
+      title: 'TikTok',
+      description: 'Short videos and trends',
+      url: '#'
+    },
+    {
+      id: '4',
+      title: 'Twitter',
+      description: 'Thoughts and updates',
+      url: '#'
+    }
+  ],
+  socials: {
+    x: '@nonochan',
+    instagram: '@nonochan',
+    tiktok: '@nonochan',
+    facebook: '@nonochan',
+    snapchat: '@nonochan',
+    telegram: '@nonochan',
+    onlyfans: '@nonochan'
+  },
+  stats: {
+    totalFollowers: '500k',
+    posts: '⭐️idle'
+  }
+};
 
 export default function HomePage() {
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [showQR, setShowQR] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
+  const [showTags, setShowTags] = useState(false);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
 
-  // ダークモード設定のみ読み込み（軽量化）
   useEffect(() => {
-    try {
-      const savedDarkMode = localStorage.getItem('dark');
-      if (savedDarkMode) {
-        setIsDarkMode(savedDarkMode === '1');
-      }
-    } catch {
-      console.log('ローカルストレージの読み込みに失敗しました');
-    }
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // ダークモードの切り替え（最適化版）
-  const toggleDarkMode = () => {
-    const newDarkMode = !isDarkMode;
-    setIsDarkMode(newDarkMode);
-    localStorage.setItem('dark', newDarkMode ? '1' : '0');
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientY);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isUpSwipe = distance > 50;
+    const isDownSwipe = distance < -50;
+
+    if (isUpSwipe && !showTags) {
+      setShowTags(true);
+    } else if (isDownSwipe && showTags) {
+      setShowTags(false);
+    }
   };
 
   const handleLinkClick = (link: LinkItem) => {
-    // 外部リンクを開く（統計なし）
+    if (link.url === '#') {
+      return;
+    }
     window.open(link.url, '_blank', 'noopener,noreferrer');
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${profile.displayName}のリンク集`,
-          text: `${profile.displayName}のSNSリンク集です`,
-          url: window.location.href,
-        });
-      } catch {
-        console.log('共有がキャンセルされました');
-      }
-    } else {
-      // フォールバック: URLをクリップボードにコピー
-      navigator.clipboard.writeText(window.location.href);
-      alert('URLをクリップボードにコピーしました！');
-    }
-  };
-
   return (
-    <div 
-      className={`min-h-screen bg-cover bg-center bg-no-repeat transition-all duration-500 ${
-        isDarkMode ? 'dark' : ''
-      }`}
-      style={{ 
-        backgroundImage: profile.backgroundUrl ? `url(${profile.backgroundUrl})` : 
-          isDarkMode ? 'linear-gradient(135deg, #1e1b4b 0%, #581c87 100%)' : 
-          'linear-gradient(135deg, #a8b5ff 0%, #c084fc 100%)',
-        backgroundAttachment: 'fixed'
-      }}
+    <div
+      className="min-h-screen bg-white text-gray-900"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
-      {/* オーバーレイ */}
-      <div className={`min-h-screen backdrop-blur-sm transition-all duration-500 ${
-        isDarkMode ? 'bg-black/40' : 'bg-white/5'
-      }`}>
-        <div className="container mx-auto px-4 py-8 max-w-md">
-          
-          {/* ヘッダー広告 */}
-          <div className="mb-4">
-            <AdSense 
-              adSlot={AdUnits.HEADER_BANNER}
-              adFormat="horizontal"
-              className="w-full"
-              adStyle={{ 
-                display: 'block',
-                width: '100%',
-                height: '90px',
-                maxWidth: '728px',
-                margin: '0 auto'
-              }}
-            />
-          </div>
-          
-          {/* コントロールボタン */}
-          <div className="flex justify-end items-center mb-6">
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleShare}
-                className="p-2 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-sm text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-black/30 transition-all duration-200"
-                title="共有"
-              >
-                <Share2 className="h-4 w-4" />
-              </button>
-              
-              <button
-                onClick={() => setShowQR(!showQR)}
-                className="p-2 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-sm text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-black/30 transition-all duration-200"
-                title="QRコード"
-              >
-                <QrCode className="h-4 w-4" />
-              </button>
-              
-              <button
-                onClick={toggleDarkMode}
-                className="p-2 rounded-full bg-white/20 dark:bg-black/20 backdrop-blur-sm text-gray-700 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-black/30 transition-all duration-200"
-                title={isDarkMode ? "ライトモード" : "ダークモード"}
-              >
-                {isDarkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-          {/* プロフィールセクション */}
-          <div className="text-center mb-8">
-            {/* アバター */}
-            <div className="relative mb-4">
-              <div className="w-24 h-24 mx-auto rounded-full overflow-hidden border-4 border-white/30 shadow-lg">
-                <img 
-                  src={profile.avatarUrl} 
-                  alt={profile.displayName}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              {/* オンラインインジケーター */}
-              <div className="absolute bottom-1 right-1/2 transform translate-x-1/2 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
-            </div>
 
-            {/* 名前とハンドル */}
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 drop-shadow-lg">
-              {profile.displayName}
+      {/* A層：プロフィールバナー（背景＋情報） */}
+      <div 
+        className="relative bg-gradient-to-br from-purple-600 to-pink-600 transition-all duration-500 ease-out overflow-hidden"
+        style={{
+          height: showTags ? '200px' : 'auto',
+          minHeight: '500px'
+        }}
+      >
+        {/* 背景画像レイヤー */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/bg.jpg)'
+          }}
+        ></div>
+        
+        {/* グラデーションオーバーレイ */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40"></div>
+        
+        {/* 画像オーバーレイ */}
+        <div className="absolute inset-0 bg-black/10"></div>
+
+        {/* 右上ユーザーアイコン */}
+        <div className="absolute top-4 right-4 z-10">
+          <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center shadow-lg">
+            <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+          </div>
+        </div>
+
+        {/* プロフィール情報（下部に配置） */}
+        <div className="absolute bottom-0 left-0 right-0 z-10 p-4 mb-4">
+          {/* プロフィール名とハートアイコン */}
+          <div className="text-center mb-3">
+            <h1 className="text-4xl font-bold text-white mb-1 drop-shadow-lg">
+              ♡ {profile.displayName} ♡
             </h1>
-            <p className="text-gray-800 dark:text-gray-200 text-sm mb-4 drop-shadow-lg">
-              @{profile.handle}
-            </p>
-
-            {/* 自己紹介 */}
-            {profile.bio && (
-              <div className="text-gray-900 dark:text-white text-sm leading-relaxed mb-6 drop-shadow-lg font-sans">
-                {profile.bio.split('\n').map((line, index) => (
-                  <p key={index} className="mb-1">
-                    {line}
-                  </p>
-                ))}
+            <div className="flex items-center justify-center space-x-2">
+              <span className="text-lg text-white drop-shadow-md">@{profile.handle}</span>
+              <div className="w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
               </div>
-            )}
-
-          </div>
-
-          {/* リンク一覧 */}
-          <div className="space-y-3">
-            {profile.links.map((link) => (
-              <div
-                key={link.id}
-                className="relative group"
-                onMouseEnter={() => setHoveredLink(link.id)}
-                onMouseLeave={() => setHoveredLink(null)}
-              >
-                <button
-                  onClick={() => handleLinkClick(link)}
-                  className={`w-full transition-all duration-300 rounded-2xl p-4 text-left shadow-lg hover:shadow-xl transform hover:scale-105 ${
-                    isDarkMode 
-                      ? 'bg-gray-800 hover:bg-gray-700' 
-                      : 'bg-white hover:bg-gray-50'
-                  }`}
-                  style={{
-                    backgroundColor: link.style?.backgroundHex ? 
-                      (isDarkMode ? `${link.style.backgroundHex}20` : link.style.backgroundHex) : 
-                      undefined
-                  }}
-                >
-                  <div className="flex items-center space-x-3">
-                    {/* アイコン */}
-                    <div className="flex-shrink-0">
-                      {link.style?.iconImageUrl ? (
-                        <div className="w-10 h-10 rounded-full overflow-hidden">
-                          <img 
-                            src={link.style.iconImageUrl} 
-                            alt={link.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      ) : link.style?.iconEmoji ? (
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xl ${
-                          isDarkMode ? 'bg-gray-700' : 'bg-gray-100'
-                        }`}>
-                          {link.style.iconEmoji}
-                        </div>
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                          <ExternalLink className="h-5 w-5 text-white" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* コンテンツ */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className={`font-semibold text-sm truncate ${
-                        isDarkMode ? 'text-white' : 'text-gray-900'
-                      }`}>
-                        {link.title}
-                      </h3>
-                      {link.description && (
-                        <p className={`text-xs mt-1 line-clamp-2 ${
-                          isDarkMode ? 'text-gray-400' : 'text-gray-600'
-                        }`}>
-                          {link.description}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* 外部リンクアイコン */}
-                    <div className="flex-shrink-0">
-                      <ExternalLink className={`h-4 w-4 ${
-                        isDarkMode ? 'text-gray-400' : 'text-gray-400'
-                      }`} />
-                    </div>
-                  </div>
-                </button>
-
-                {/* ホバーエフェクト */}
-                {hoveredLink === link.id && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl pointer-events-none"></div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* インライン広告（リンクの下に配置） */}
-          <div className="my-6">
-            <AdSense 
-              adSlot={AdUnits.INLINE_RECTANGLE}
-              adFormat="rectangle"
-              className="w-full"
-              adStyle={{ 
-                display: 'block',
-                width: '100%',
-                height: '250px',
-                maxWidth: '300px',
-                margin: '0 auto'
-              }}
-            />
-          </div>
-
-          {/* QRコード表示 */}
-          {showQR && (
-            <div className="mt-6 p-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl text-center">
-              <h3 className={`text-sm font-semibold mb-2 ${
-                isDarkMode ? 'text-white' : 'text-gray-900'
-              }`}>
-                QRコード
-              </h3>
-              <div className="w-32 h-32 mx-auto bg-white p-2 rounded-lg">
-                {/* 簡易的なQRコード風の表示 */}
-                <div className="w-full h-full bg-black grid grid-cols-8 gap-0.5">
-                  {Array.from({ length: 64 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`w-full h-full ${
-                        Math.random() > 0.5 ? 'bg-white' : 'bg-black'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
-              <p className={`text-xs mt-2 ${
-                isDarkMode ? 'text-gray-400' : 'text-gray-600'
-              }`}>
-                このQRコードをスキャンしてアクセス
-              </p>
             </div>
-          )}
-
-          {/* お知らせ欄 */}
-          <div className="mt-6 p-4 bg-gradient-to-r from-pink-500/20 to-purple-500/20 dark:from-pink-500/10 dark:to-purple-500/10 backdrop-blur-sm rounded-2xl border border-pink-200/30 dark:border-pink-500/20">
-            <h3 className={`text-sm font-semibold mb-2 ${
-              isDarkMode ? 'text-white' : 'text-gray-900'
-            }`}>
-              📢 お知らせ
-            </h3>
-            <p className={`text-xs leading-relaxed ${
-              isDarkMode ? 'text-gray-300' : 'text-gray-700'
-            }`}>
-              いつもありがとうございます！新しいコンテンツを随時更新中です✨
-            </p>
           </div>
 
-          {/* フッター広告 */}
-          <div className="mt-6 mb-4">
-            <AdSense 
-              adSlot={AdUnits.FOOTER_HORIZONTAL}
-              adFormat="horizontal"
-              className="w-full"
-              adStyle={{ 
-                display: 'block',
-                width: '100%',
-                height: '90px',
-                maxWidth: '728px',
-                margin: '0 auto'
-              }}
-            />
+          {/* SNSアイコン */}
+          <div className="flex justify-center space-x-3 mb-3">
+            {/* Instagram */}
+            <a href="https://www.instagram.com/nonohaihanai/?next=%2F" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform duration-200">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-orange-500 flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+              </div>
+            </a>
+            {/* X (Twitter) */}
+            <a href="https://x.com/qpr_xx" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform duration-200">
+              <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
+                <span className="text-xs font-bold text-white">X</span>
+              </div>
+            </a>
+            {/* YouTube */}
+            <a href="https://youtube.com/channel/UCwU4q404b1Sjy1JVIPvOoVQ?si=D6xIDG4upFASvzYS" target="_blank" rel="noopener noreferrer" className="hover:scale-110 transition-transform duration-200">
+              <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zm6.39-2.908a.75.75 0 01.766.027l3.5 2.25a.75.75 0 010 1.262l-3.5 2.25A.75.75 0 018 12.25v-4.5a.75.75 0 01.39-.658z" clipRule="evenodd" />
+                </svg>
+              </div>
+            </a>
+            {/* ? (質問マーク) */}
+            <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center">
+              <span className="text-xs font-bold text-white">?</span>
+            </div>
           </div>
 
-          {/* フッター */}
-          <div className="text-center mt-4">
-            <p className={`text-xs drop-shadow ${
-              isDarkMode ? 'text-gray-400' : 'text-gray-700'
-            }`}>
-              ののちゃんリンク
-            </p>
+          {/* フォロワー数 */}
+          <div className={`text-center text-white transition-all duration-500 ease-out ${
+            showTags ? 'opacity-0 -translate-y-4' : 'opacity-100 translate-y-0'
+          }`}>
+            <div className="flex items-center justify-center space-x-1 mb-1">
+              <span className="text-lg font-bold">{profile.stats?.totalFollowers} Total Followers</span>
+              <ChevronDown className="w-4 h-4" />
+            </div>
+            <div className="flex items-center justify-center space-x-1">
+              <span className="text-sm">{profile.stats?.posts}</span>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* B層：リンク一覧（A層の下） */}
+      <div className="relative" style={{
+        marginTop: '0px',
+        zIndex: 5
+      }}>
+          <div className="bg-pink-100 rounded-t-3xl p-4 pb-8" style={{
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            boxShadow: '0 -10px 30px rgba(0,0,0,0.2)',
+            marginTop: '-20px',
+            borderTop: '1px solid rgba(255,255,255,0.8)'
+          }}>
+
+          {/* メインコンテンツブロック（OnlyFans） */}
+          <div className="relative h-48 rounded-2xl overflow-hidden mb-4 shadow-lg">
+            <div 
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat blur-md"
+              style={{
+                backgroundImage: 'url(/icons/onlyfans.jpg)'
+              }}
+            ></div>
+            <div className="absolute inset-0 bg-black/20"></div>
+            <div className="absolute top-3 right-3">
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                <span className="text-white text-sm font-bold">?</span>
+              </div>
+            </div>
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
+              <span className="text-white text-lg font-semibold">Coming Soon</span>
+            </div>
+          </div>
+
+          {/* 2x2グリッド */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            {/* 左上 - X (Twitter) */}
+            <a href="https://x.com/qpr_xx" target="_blank" rel="noopener noreferrer" className="block">
+              <div className="relative h-32 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-200">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                  style={{
+                    backgroundImage: 'url(/icons/x.jpg)'
+                  }}
+                ></div>
+                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="absolute top-2 right-2">
+                  <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">X</span>
+                  </div>
+                </div>
+              </div>
+            </a>
+
+            {/* 右上 - Instagram */}
+            <a href="https://www.instagram.com/nonohaihanai/?next=%2F" target="_blank" rel="noopener noreferrer" className="block">
+              <div className="relative h-32 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-200">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                  style={{
+                    backgroundImage: 'url(/icons/instagram.jpg)'
+                  }}
+                ></div>
+                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="absolute top-2 right-2">
+                  <div className="w-6 h-6 bg-gradient-to-br from-pink-400 to-orange-400 rounded-full flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                  </div>
+                </div>
+                <div className="absolute bottom-2 left-2">
+                  <span className="text-white text-sm font-medium">Instagram</span>
+                </div>
+              </div>
+            </a>
+
+            {/* 左下 - YouTube */}
+            <a href="https://youtube.com/channel/UCwU4q404b1Sjy1JVIPvOoVQ?si=D6xIDG4upFASvzYS" target="_blank" rel="noopener noreferrer" className="block">
+              <div className="relative h-32 rounded-2xl overflow-hidden shadow-lg hover:scale-105 transition-transform duration-200">
+                <div 
+                  className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                  style={{
+                    backgroundImage: 'url(/icons/youtube.jpg)'
+                  }}
+                ></div>
+                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="absolute top-2 right-2">
+                  <div className="w-6 h-6 bg-red-600 rounded-full flex items-center justify-center">
+                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M2 10a8 8 0 1116 0 8 8 0 01-16 0zm6.39-2.908a.75.75 0 01.766.027l3.5 2.25a.75.75 0 010 1.262l-3.5 2.25A.75.75 0 018 12.25v-4.5a.75.75 0 01.39-.658z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </a>
+
+            {/* 右下 - 工事中 */}
+            <div className="relative h-32 rounded-2xl overflow-hidden shadow-lg">
+              <div 
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                style={{
+                  backgroundImage: 'url(/icons/question-box.jpg)'
+                }}
+              ></div>
+              <div className="absolute inset-0 bg-black/20"></div>
+              <div className="absolute top-2 right-2">
+                <div className="w-6 h-6 bg-orange-600 rounded-full flex items-center justify-center">
+                  <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+              <div className="absolute bottom-2 left-2">
+                <span className="text-white text-sm font-medium">工事中</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
