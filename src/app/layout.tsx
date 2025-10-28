@@ -73,8 +73,8 @@ export default function RootLayout({
           `}
         </Script>
         
-        {/* メタタグ最適化 */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        {/* メタタグ最適化 - PCでもスマホサイズで表示 */}
+        <meta name="viewport" content="width=375, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
         <meta name="robots" content="index, follow" />
         <meta name="googlebot" content="index, follow" />
         <link rel="canonical" href="https://your-domain.com" />

@@ -13,6 +13,9 @@ const nextConfig: NextConfig = {
     optimizePackageImports: ['lucide-react'],
   },
   
+  // 圧縮設定
+  compress: true,
+  
   // ESLint設定
   eslint: {
     ignoreDuringBuilds: true,

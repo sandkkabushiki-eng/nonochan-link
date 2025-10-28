@@ -151,12 +151,14 @@ export default function HomePage() {
   };
 
   return (
-    <div
-      className="min-h-screen bg-white text-gray-900"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
+    <div className="min-h-screen bg-white text-gray-900 flex justify-center">
+      {/* PCでもスマホサイズで表示するためのコンテナ */}
+      <div 
+        className="w-full max-w-sm mx-auto min-h-screen bg-white mobile-container"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
 
       {/* A層：プロフィールバナー（背景＋情報） */}
       <div 
@@ -435,6 +437,7 @@ export default function HomePage() {
         }
       `}</style>
 
+      </div>
     </div>
   );
 }
