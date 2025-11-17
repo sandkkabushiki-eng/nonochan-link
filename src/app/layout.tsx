@@ -31,6 +31,7 @@ export const metadata: Metadata = {
     title: "ののちゃんリンク",
     description: "ののちゃんのSNSリンク集",
     type: "website",
+    // images: [{ url: '/og-image.jpg', width: 1200, height: 630 }], // OG画像を追加する場合はコメントを外してください
   },
 };
 
@@ -49,8 +50,8 @@ export default function RootLayout({
           crossOrigin="anonymous"
         ></script>
         
-        {/* Google Analytics - 本格設定 */}
-        <Script
+        {/* Google Analytics - 設定が必要な場合はIDを変更してください */}
+        {/* <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"
           strategy="afterInteractive"
         />
@@ -71,13 +72,14 @@ export default function RootLayout({
               page_location: window.location.href
             });
           `}
-        </Script>
+        </Script> */}
         
         {/* メタタグ最適化 - PCでもスマホサイズで表示 */}
         <meta name="viewport" content="width=375, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
         <meta name="robots" content="index, follow" />
         <meta name="googlebot" content="index, follow" />
-        <link rel="canonical" href="https://your-domain.com" />
+        {/* canonical URLはデプロイ後に設定してください */}
+        {/* <link rel="canonical" href="https://your-domain.com" /> */}
         
         {/* AdSense所有権確認用メタタグ */}
         <meta name="google-adsense-account" content="ca-pub-9157219543395530" />
